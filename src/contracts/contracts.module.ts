@@ -4,7 +4,12 @@ import { ContractsController } from './contracts.controller';
 import { ContractsService } from './contracts.service';
 
 @Module({
-  imports: [HttpModule],
+  imports: [
+    HttpModule.register({
+      timeout: 10_000,
+      baseURL: 'https://safe-transaction.gnosis.io/api/v1',
+    }),
+  ],
   controllers: [ContractsController],
   providers: [ContractsService],
 })

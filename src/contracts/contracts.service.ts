@@ -1,52 +1,17 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
-import { AxiosResponse } from 'axios';
-import { map, Observable } from 'rxjs';
+import { HttpException, Injectable } from '@nestjs/common';
+import { map, lastValueFrom } from 'rxjs';
 import { Contract } from './entities/contract.entity';
 
 @Injectable()
 export class ContractsService {
   constructor(private httpService: HttpService) {}
 
-  private readonly contractMock: Contract = {
-    address: '0x95ba94c6a2Dc8521754e7B8f4C1dFDBC9A271cA5',
-    name: 'GnosisSafeProxy',
-    displayName: '',
-    logoUri: null,
-    contractAbi: {
-      abi: [
-        {
-          inputs: [
-            {
-              internalType: 'address',
-              name: '_singleton',
-              type: 'address',
-            },
-          ],
-          stateMutability: 'nonpayable',
-          type: 'constructor',
-        },
-        {
-          stateMutability: 'payable',
-          type: 'fallback',
-        },
-      ],
-      description: 'GnosisSafeProxy',
-      relevance: 100,
-    },
-    trustedForDelegateCall: false,
-  };
-
-  async findOne(chainId: number, contractId: string): Promise<Contract> {
-    console.log(`Getting contract for chain ${chainId} and id ${contractId}`);
-
+  async findOne(chainId: number, address: string): Promise<Contract> {
     try {
-      return this.httpService
-        .get(`https://safe-transaction.gnosis.io/api/v1/contracts/${contractId}/`)
-        .pipe(map((res) => res.data))
-        .toPromise();
+      return await lastValueFrom(this.httpService.get(`/contracts/${address}/`).pipe(map((res) => res.data)));
     } catch (err) {
-      console.error(err);
+      throw new HttpException(err.response.statusText, err.response.status);
     }
   }
 }
