@@ -6,10 +6,7 @@ import { Contract } from './entities/contract.entity';
 
 @Injectable()
 export class ContractsService {
-  constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    private httpService: HttpService,
-  ) {}
+  constructor(@Inject(CACHE_MANAGER) private cache: Cache, private httpService: HttpService) {}
 
   private buildCacheKey(chainId: number, address: string): string {
     return `${chainId}_${address}`;
@@ -18,7 +15,7 @@ export class ContractsService {
   async findOne(chainId: number, address: string): Promise<Contract> {
     try {
       const cacheKey: string = this.buildCacheKey(chainId, address);
-      const cached: Contract = await this.cacheManager.get(cacheKey);
+      const cached: Contract = await this.cache.get(cacheKey);
 
       if (cached) {
         return cached;
@@ -28,7 +25,7 @@ export class ContractsService {
         this.httpService.get(`/contracts/${address}/`).pipe(map((res) => res.data)),
       );
 
-      await this.cacheManager.set(cacheKey, data, { ttl: 0 });
+      await this.cache.set(cacheKey, data, { ttl: 0 });
 
       return data;
     } catch (err) {
