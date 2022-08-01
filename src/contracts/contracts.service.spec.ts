@@ -23,7 +23,7 @@ describe('ContractsService', () => {
         }
         if (token === HttpService) {
           return {
-            get: () => jest.fn().mockReturnValue(of({ data: { foo: 'bar' } })),
+            get: jest.fn().mockReturnValue(of({ data: { foo: 'bar' } })),
           };
         }
       })
@@ -41,13 +41,12 @@ describe('ContractsService', () => {
   it('should return the cached value if any', async () => {
     const testData = { data: 'testContract' };
     cache.get = jest.fn().mockResolvedValueOnce(testData);
-    await expect(service.findOne(expect.anything(), expect.anything())).resolves.toBe(testData);
+    expect(await service.findOne(expect.anything(), expect.anything())).toBe(testData);
   });
 
   it('should make an http call if no cached value is present', async () => {
     cache.get = jest.fn().mockResolvedValueOnce(null);
-    httpService.get = jest.fn().mockReturnValueOnce(of({ data: { foo: 'bar' } }));
-    await expect(service.findOne(expect.anything(), expect.anything())).resolves;
-    await expect(httpService.get(expect.anything())).resolves.toBeCalledTimes(2);
+    expect(await service.findOne(expect.anything(), expect.anything())).resolves;
+    expect(httpService.get).toHaveBeenCalledTimes(1);
   });
 });
